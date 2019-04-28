@@ -6,12 +6,17 @@ screen_size = (800, 600)
 white=(255,255,255)
 black=(0,0,0)
 
+#Variaveis de estilo
+background = white
+foreground = black
+
 pygame.init()
 screen = pygame.display.set_mode(screen_size)
 layer = pygame.surface.Surface(screen_size)
+layer.blit(screen, (0,0)) 
 
 pygame.display.set_caption('Trabalho computacao grafica')
-screen.fill(white)
+screen.fill(background)
 layer.fill(white)
 pygame.display.flip()
 
