@@ -16,10 +16,13 @@ def on_move(x, y):
     mouseX, mouseY = pygame.mouse.get_pos()
     global start 
     if clicked:
-        primitives.screen.fill((0,0,0))
-        retangulo(start[0], start[1], mouseX, mouseY, white)
-        #r = int(math.sqrt(((mouseX - start[0]) ** 2) + ((mouseY - start[1]) ** 2)))
-        #circulo(start[0], start[1], r, white)
+        primitives.screen.fill(white)
+        #print('Drawing rectangle of color: ', black)
+        #retangulo(start[0], start[1], mouseX, mouseY, black)
+        #linha(start[0], start[1], mouseX, mouseY, black)
+        r = int(math.sqrt(((mouseX - start[0]) ** 2) + ((mouseY - start[1]) ** 2)))
+        triangulo(start[0], start[1], r, black)
+        #circulo(start[0], start[1], r, black)
 
 def on_click(x, y, button, pressed):
     global clicked
@@ -30,7 +33,7 @@ def on_click(x, y, button, pressed):
         clicked = True
     else:
         clicked = False
-    print('{0} at {1}'.format('Pressed' if pressed else 'Released', (x, y)))
+#    print('{0} at {1}'.format('Pressed' if pressed else 'Released', (x, y)))
 #    if not pressed:
 #        return False
 

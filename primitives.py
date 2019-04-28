@@ -1,14 +1,17 @@
 import sys,pygame
 from pygame import gfxdraw
 
-pygame.init()
-screen = pygame.display.set_mode((400,400))
-pygame.display.set_caption('Trabalho computacao grafica')
-screen.fill((0,0,0))
-pygame.display.flip()
-
 #Cores
 white=(255,255,255)
+black=(0,0,0)
+
+pygame.init()
+screen = pygame.display.set_mode((800,600))
+pygame.display.set_caption('Trabalho computacao grafica')
+screen.fill(white)
+pygame.display.flip()
+
+
 
 #def linha(x1, y1, x2, y2, color):
 #    screen.set_at((x1, y1), color)
@@ -60,7 +63,7 @@ def _linhaV(x0, y0, x1, y1, color):
     x = x0
 
     for y in range(dy):
-        screen.set_at((x, y + y0), white)
+        screen.set_at((x, y + y0), color)
         if D > 0:
             x = x + xi
             D = D - 2*dy
@@ -114,13 +117,19 @@ def _circulo(x, y, x0, y0, color):
 
 
 def retangulo(x, y, w, h, color):
-    _segmento(x, y, w, y, white)
-    _segmento(w, y, w, h, white)
-    _segmento(w, h, x, h, white)
-    _segmento(x, h, x, y, white)
+    _segmento(x, y, w, y, color)
+    _segmento(w, y, w, h, color)
+    _segmento(w, h, x, h, color)
+    _segmento(x, h, x, y, color)
     pygame.display.flip()
 
 
+def triangulo(x, y, size, color):
+#    size = 2 * size // 3 
+    _segmento(x - size, y + size, x, y - size, color)
+    _segmento(x, y - size, x + size,  y + size, color)
+    _segmento(x + size, y + size, x - size, y + size, color)
+    pygame.display.flip()
 
 #linha(10 + 50, 10 + 50, 50 + 50, 50 + 50)
 #circulo(200, 200, 100, white)
