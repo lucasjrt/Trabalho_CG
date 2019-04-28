@@ -1,27 +1,25 @@
 import pygame, sys, math, primitives
-from pygame import gfxdraw
 from primitives import *
 from pynput.mouse import Listener
 from pynput import mouse
 
 
-#Variavel de controle
+#Variaveis de controle
 clicked = False
 start = (0, 0)
 
-#primitives.screen.set_at((100, 150), white)
-#circulo(100, 150, 102, white)
+#Implementacao da interface
+#TODO
 
 def on_move(x, y):
     mouseX, mouseY = pygame.mouse.get_pos()
     global start 
     if clicked:
-        primitives.screen.fill(white)
-        #print('Drawing rectangle of color: ', black)
+        primitives.screen.blit(layer, (0,0))
         #retangulo(start[0], start[1], mouseX, mouseY, black)
-        #linha(start[0], start[1], mouseX, mouseY, black)
-        r = int(math.sqrt(((mouseX - start[0]) ** 2) + ((mouseY - start[1]) ** 2)))
-        triangulo(start[0], start[1], r, black)
+        linha(start[0], start[1], mouseX, mouseY, black)
+        #r = int(math.sqrt(((mouseX - start[0]) ** 2) + ((mouseY - start[1]) ** 2)))
+        #triangulo(start[0], start[1], r, black)
         #circulo(start[0], start[1], r, black)
 
 def on_click(x, y, button, pressed):
@@ -32,14 +30,10 @@ def on_click(x, y, button, pressed):
     if pressed:
         clicked = True
     else:
+        primitives.layer.blit(screen, (0,0))
         clicked = False
-#    print('{0} at {1}'.format('Pressed' if pressed else 'Released', (x, y)))
-#    if not pressed:
-#        return False
 
-listener = mouse.Listener(
-        on_move=on_move,
-        on_click=on_click)
+listener = mouse.Listener( on_move=on_move, on_click=on_click)
 listener.start()
 
 while 1:

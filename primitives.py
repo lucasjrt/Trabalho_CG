@@ -1,38 +1,19 @@
-import sys,pygame
-from pygame import gfxdraw
+import pygame
+
+screen_size = (800, 600)
 
 #Cores
 white=(255,255,255)
 black=(0,0,0)
 
 pygame.init()
-screen = pygame.display.set_mode((800,600))
+screen = pygame.display.set_mode(screen_size)
+layer = pygame.surface.Surface(screen_size)
+
 pygame.display.set_caption('Trabalho computacao grafica')
 screen.fill(white)
+layer.fill(white)
 pygame.display.flip()
-
-
-
-#def linha(x1, y1, x2, y2, color):
-#    screen.set_at((x1, y1), color)
-#    dx = x2 - x1
-#    dy = y2 - y1
-#    dy2 = 2 * dy
-#    dydx2 = dy2 - 2 * dx
-#    pant = dy2 - dx
-#    x = x1
-#    y = y1
-#    for i in range(dx):
-#        if pant < 0:
-#            screen.set_at((x + 1, y), color)
-#            pant = pant + dy2
-#        else:
-#            screen.set_at((x + 1, y + 1), color)
-#            pant = pant + dydx2
-#            y += 1
-#        x += 1
-#    pygame.display.flip()
-
 
 def _linhaH(x0, y0, x1, y1, color):
     dx = x1 - x0
@@ -43,14 +24,13 @@ def _linhaH(x0, y0, x1, y1, color):
         dy = -dy
     D = 2*dy - dx
     y = y0
-
     for x in range(dx):
         screen.set_at((x + x0, y), color)
         if D > 0:
             y = y + yi
             D = D - 2*dx
-
         D = D + 2*dy
+
 
 def _linhaV(x0, y0, x1, y1, color):
     dx = x1 - x0
@@ -61,7 +41,6 @@ def _linhaV(x0, y0, x1, y1, color):
         dx = -dx
     D = 2*dx - dy
     x = x0
-
     for y in range(dy):
         screen.set_at((x, y + y0), color)
         if D > 0:
@@ -82,15 +61,16 @@ def _segmento(x0, y0, x1, y1, color):
         else:
             _linhaV(x0, y0, x1, y1, color)
 
+
 def linha(x0, y0, x1, y1, color):
     _segmento(x0, y0, x1, y1, color)
     pygame.display.flip()
+
 
 def circulo(x0, y0, r, color):
     x = 0
     y = r
     d = 1 - r
- 
     _circulo (x, y, x0, y0, color)
     while y > x :
         if d < 0 :
@@ -104,7 +84,6 @@ def circulo(x0, y0, r, color):
     
 
 def _circulo(x, y, x0, y0, color):
-
     screen.set_at((x + x0, y + y0), color)
     screen.set_at((x0 - y, x + y0), color)
     screen.set_at((x0 - y, y0 - x), color)
@@ -113,7 +92,6 @@ def _circulo(x, y, x0, y0, color):
     screen.set_at((x + x0, y0 - y), color)
     screen.set_at((y + x0, y0 - x), color)
     screen.set_at((y + x0, x + y0), color)
-
 
 
 def retangulo(x, y, w, h, color):
@@ -125,18 +103,7 @@ def retangulo(x, y, w, h, color):
 
 
 def triangulo(x, y, size, color):
-#    size = 2 * size // 3 
     _segmento(x - size, y + size, x, y - size, color)
     _segmento(x, y - size, x + size,  y + size, color)
     _segmento(x + size, y + size, x - size, y + size, color)
     pygame.display.flip()
-
-#linha(10 + 50, 10 + 50, 50 + 50, 50 + 50)
-#circulo(200, 200, 100, white)
-#retangulo(10, 10, 100, 100, white)
-
-#while 1:
-#    for event in pygame.event.get():
-#        if event.type == pygame.QUIT:
-#            sys.exit()
-
