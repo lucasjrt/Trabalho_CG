@@ -1,12 +1,14 @@
 import pygame, sys, math, primitives
 from primitives import *
 from pynput.mouse import Listener
+from pynput.keyboard import Key, Listener
 from pynput import mouse
+from threading import Thread
 
 #Variaveis de controle
 clicked = False
 start = (0, 0)
-primitivas = {'Linha', 'Circulo', 'Retangulo', 'Quadrado', 'Triangulo', 'Curva'} #Apenas para referencia, desnecessario
+primitivas = {'Linha', 'Circulo', 'Retangulo', 'Quadrado', 'Polilinha', 'Curva'} #Apenas para referencia, desnecessario
 atual = 0 #Primitiva atual sendo desenhada
 
 #Implementacao da interface
@@ -38,11 +40,20 @@ x0 = (screen_size[0] >> 4) + (screen_size[0] >> 5)
 y0 = ((screen_size[1] // 6) * 3) + (screen_size[1] // 24)
 size = screen_size[1] // 12
 retangulo(x0, y0, x0 + size, y0 + size, foreground)
-#Triangulo
-x0 = (screen_size[0] >> 3)
-y0 = ((screen_size[1] // 6) * 4) + (screen_size[1] // 12)
-size = screen_size[1] // 18 
-triangulo(x0, y0, size, foreground)
+#Polilinha
+x0 = (screen_size[0] >> 5)
+y0 = ((screen_size[1] // 6) * 5) - screen_size[1] // 24
+x1 = (screen_size[0] >> 5) + (screen_size[0] >> 4)
+y1 = ((screen_size[1] // 6) * 4) + screen_size[1] // 24
+linha(x0, y0, x1, y1, foreground)
+x0 = (screen_size[0] >> 3) + (screen_size[0] >> 5)
+y0 = ((screen_size[1] // 6) * 5) - screen_size[1] // 24
+linha(x1, y1, x0, y0, foreground)
+x0 -= 1
+y0 += 1
+x1 = (screen_size[0] >> 2) - (screen_size[0] >> 5)
+y1 = ((screen_size[1] // 6) * 4) + screen_size[1] // 24
+linha(x0, y0, x1, y1, foreground)
 #Curva
 #TODO: Depois de implementada a curva, adicionar aqui
 
@@ -50,6 +61,7 @@ layer.blit(screen, (0,0))
 
 #Mouse listeners
 def on_move(x, y):
+    #print(clicked)
     global start 
     if clicked:
         mouseX, mouseY = pygame.mouse.get_pos()
@@ -71,10 +83,9 @@ def on_move(x, y):
                 signal = -signal
             retangulo(start[0], start[1], mouseX, start[1] + ((mouseX - start[0]) * signal), foreground)
         elif atual == 4:
-            r = int(math.sqrt(((mouseX - start[0]) ** 2) + ((mouseY - start[1]) ** 2)))
-            if r > start[0] - (screen_size[0] >> 2):
-                r = start[0] - (screen_size[0] >> 2)
-            triangulo(start[0], start[1], r, foreground)
+            #TODO: Implementar polilinha
+            if clicked:
+                linha(start[0], start[1], mouseX, mouseY, foreground)
         else:
             #TODO: Desenho da curva
             pass
@@ -87,20 +98,45 @@ def on_click(x, y, button, pressed):
     mouseX, mouseY = pygame.mouse.get_pos()
     start = (mouseX, mouseY)
     if pressed:
+        layer.blit(screen, (0,0))
         if mouseX > screen_size[0] >> 2:
             clicked = True
         else: #Fora do viewport
             atual = mouseY // (screen_size[1] // len(primitivas))
     else:
-        clicked = False
         layer.blit(screen, (0,0))
+        if atual != 4:
+            clicked = False
+
+
+
+def on_press(key):
+    global clicked
+    if key == Key.esc:
+        clicked = False
+        screen.blit(layer, (0,0))
+        pygame.display.flip()
 
 
 listener = mouse.Listener( on_move=on_move, on_click=on_click)
 listener.start()
 
+def kb_listener(args):
+    with Listener(on_press=on_press) as l:
+        l.join()
+
+
+thread = Thread(target = kb_listener, args = (10, ))
+thread.daemon = True
+thread.start()
+
+
+#try:
 while 1:
     for event in pygame.event.get():
         if event.type == pygame.QUIT:
             sys.exit()
-
+#except SystemExit:
+#    pygame.quit()
+#    thread.exit()
+#    sys.exit()
