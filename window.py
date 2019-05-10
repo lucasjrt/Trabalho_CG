@@ -9,14 +9,21 @@ from threading import Thread
 clicked = False
 start = (0, 0)
 primitivas = {'Linha', 'Circulo', 'Retangulo', 'Quadrado', 'Polilinha', 'Curva'} #Apenas para referencia, desnecessario
+cores = [(0,0,0),(51,51,51),(255,0,0),(255,51,51),(255,255,0),(0,255,0),(0,230,255),(0,80,255),(255,0,255),(255,160,10),(255,10,160),(10,255,120),(130,130,130),(255,255,254),(0,0,255),(255,200,10)]
 atual = 0 #Primitiva atual sendo desenhada
-
+c = 0
 #Implementacao da interface
 #Esqueleto
 linha(screen_size[0] >> 2, 0, screen_size[0] >> 2, screen_size[1], foreground)
+linha(screen_size[0] >> 2, screen_size[1] >> 4,screen_size[0], screen_size[1] >> 4,foreground)
+for i in range((screen_size[0] >> 2) + 10, (screen_size[0] >> 2) + 538, 33):
+    retangulo(i, 3, i+29, 32, foreground)
+    colorir(i+1,4,cores[c])
+    c = c+1
 for i in range(len(primitivas)):
     y = screen_size[1] // len(primitivas) * (i + 1)
     linha(0, y, screen_size[0] >> 2, y, foreground)
+
 #Desenho amostral das primitivas
 #Linha
 x0 = screen_size[0] >> 5
@@ -61,12 +68,13 @@ layer.blit(screen, (0,0))
 
 #Mouse listeners
 def on_move(x, y):
-    #print(clicked)
     global start 
+    mouseX, mouseY = pygame.mouse.get_pos()
     if clicked:
-        mouseX, mouseY = pygame.mouse.get_pos()
         if mouseX < screen_size[0] >> 2:
             mouseX = screen_size[0] >> 2
+        if mouseY < screen_size[1] >> 4:
+            mouseY = screen_size[1] >> 4
         screen.blit(layer, (0,0))
         if atual == 0: 
             linha(start[0], start[1], mouseX, mouseY, foreground)
@@ -74,18 +82,26 @@ def on_move(x, y):
             r = int(math.sqrt(((mouseX - start[0]) ** 2) + ((mouseY - start[1]) ** 2)))
             if r > start[0] - (screen_size[0] >> 2):
                 r = start[0] - (screen_size[0] >> 2)
+            if r > start[1] - (screen_size[1] >> 4):
+                r = start[1] - (screen_size[1] >> 4)
             circulo(start[0], start[1], r, foreground)
         elif atual == 2:
             retangulo(start[0], start[1], mouseX, mouseY, foreground)
         elif atual == 3:
+                
             signal = abs(mouseY - start[1]) // (mouseY - start[1]) if mouseY != start[1] else 1
             if mouseX < start[0]:
                 signal = -signal
+
+            if abs(mouseX - start[0]) > abs(start[1] - (screen_size[1] >> 4)) and start[1] > mouseY:
+                if mouseX > start[0]:
+                     mouseX = start[0] + abs((screen_size[1] >> 4) - start[1])
+                else:
+                     mouseX = start[0] - abs((screen_size[1] >> 4) - start[1])
+                
             retangulo(start[0], start[1], mouseX, start[1] + ((mouseX - start[0]) * signal), foreground)
         elif atual == 4:
-            #TODO: Implementar polilinha
-            if clicked:
-                linha(start[0], start[1], mouseX, mouseY, foreground)
+          	linha(start[0], start[1], mouseX, mouseY, foreground)
         else:
             #TODO: Desenho da curva
             pass
@@ -99,7 +115,7 @@ def on_click(x, y, button, pressed):
     start = (mouseX, mouseY)
     if pressed:
         layer.blit(screen, (0,0))
-        if mouseX > screen_size[0] >> 2:
+        if mouseX > screen_size[0] >> 2 and mouseY > screen_size[1] >> 4:
             clicked = True
         else: #Fora do viewport
             atual = mouseY // (screen_size[1] // len(primitivas))
