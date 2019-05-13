@@ -8,15 +8,15 @@ from threading import Thread
 #Variaveis de curva
 selected_point = None
 curving = False
-control_points = [(300,100), (300,500), (450,500), (500,150)]
-
+#control_points = [(300,100), (300,500), (450,500), (500,150)]
+control_points = [(0,0),(0,0),(0,0)]
 #Variaveis de controle
 clicked = False
 start = (0, 0)
 primitivas = {'Linha', 'Circulo', 'Retangulo', 'Quadrado', 'Polilinha', 'Curva'} #Apenas para referencia, desnecessario
-cores = [(0,0,0),(51,51,51),(255,0,0),(255,51,51),(255,255,0),(0,255,0),(0,230,255),(0,80,255),(255,0,255),(255,160,10),(255,10,160),(10,255,120),(130,130,130),(255,255,254),(0,0,255),(255,200,10)]
+cores = [(255,255,254),(51,51,51),(255,0,0),(255,51,51),(255,255,0),(0,255,0),(0,230,255),(0,80,255),(255,0,255),(255,160,10),(255,10,160),(10,255,120),(130,130,130),(0,0,0),(0,0,255),(255,200,10)]
 atual = 0 #Primitiva atual sendo desenhada
-atualcor = 0
+atualcor = 0 #Cor atual sendo usada
 c = 0
 #Implementacao da interface
 #Esqueleto
@@ -30,6 +30,8 @@ for i in range(len(primitivas)):
     y = screen_size[1] // len(primitivas) * (i + 1)
     linha(0, y, screen_size[0] >> 2, y, foreground)
 retangulo((screen_size[0] >> 2) + 556, 5, (screen_size[0] >> 2) + 581, 30,foreground)
+retangulo((screen_size[0] >> 2) + 561, 10, (screen_size[0] >> 2) + 576, 25,foreground)
+colorir((screen_size[0] >> 2) + 563,12,cores[atualcor])
 
 #Desenho amostral das primitivas
 #Linha
@@ -69,6 +71,13 @@ x1 = (screen_size[0] >> 2) - (screen_size[0] >> 5)
 y1 = ((screen_size[1] // 6) * 4) + screen_size[1] // 24
 linha(x0, y0, x1, y1, foreground)
 #Curva
+x0 = screen_size[0] >> 5
+y0 = ((screen_size[1] // 6) * 5) + 24
+x1 = (screen_size[0] >> 2) - 24 
+y1 = screen_size[1] - 24
+x2 = (screen_size[0] >> 2) - 24 
+y2 = ((screen_size[1] // 6) * 5) + 24
+bezierQuadrado((x0,y0),(x1,y1),(x2,y2))
 #TODO: Depois de implementada a curva, adicionar aqui
 
 layer.blit(screen, (0,0))
@@ -78,6 +87,8 @@ def on_move(x, y):
     global control_points
     global start
     global atual
+    global clicked
+    global curving
     mouseX, mouseY = pygame.mouse.get_pos()
     if clicked:
         if mouseX < screen_size[0] >> 2:
@@ -111,29 +122,33 @@ def on_move(x, y):
         elif atual == 4:
           	linha(start[0], start[1], mouseX, mouseY, foreground)
         elif atual == 5:
+            if curving == 1:
+                linha(start[0], start[1], mouseX, mouseY, foreground)
+            elif curving == 2:
+                bezierQuadrado(control_points[0], control_points[1], (mouseX,mouseY))
+            else:
+                curving = 0
+            '''
             for p in control_points:
-                if abs(p[0] - start[0]) < 10 and abs(p[1] - start[1]) < 10:
-                    print("chego aqui")
-                    print(selected_point)
+                if selected_point is not None:
                     if selected_point is not None:
                         control_points[selected_point] = (mouseX, mouseY)
-                        print(control_points)
-                        pygame.draw.circle(screen, (0,255,0), (control_points[selected_point][0],control_points[selected_point][1]), 10)
-                
+                        circulo(control_points[selected_point][0], control_points[selected_point][1], 10, (0,255,0))
                     # Desenha os pontos de controle
                     for p in control_points:
                         circulo(p[0], p[1], 4, (0,0,255))
 
                     # Desenha as linhas de controle
-                    #pygame.draw.lines(screen, (200,200,200), False, [(x[0], x[1]) for x in control_points])
-                    for i in range(0,len(control_points)-1):
-                        linha(control_points[i][0], control_points[i][1], control_points[i+1][0], control_points[i+1][1], (200,200,200))
+                    #for i in range(0,len(control_points)-1):
+                    linhaSegmento(control_points[0][0], control_points[0][1], control_points[1][0], control_points[1][1], (200,200,200))
+                    linhaSegmento(control_points[2][0], control_points[2][1], control_points[3][0], control_points[3][1], (200,200,200))
 
                     # Desenha a curva de bezier
-                    b_points = compute_bezier_points([(x[0], x[1]) for x in control_points])
+                    b_points = bezierCubica([(x[0], x[1]) for x in control_points])
                     for i in range(0,len(b_points)-1):
-                        linha(b_points[i][0], b_points[i][1], b_points[i+1][0], b_points[i+1][1], (255,0,0))
+                        linhaSegmento(b_points[i][0], b_points[i][1], b_points[i+1][0], b_points[i+1][1], (255,0,0))
                     pygame.display.flip()
+            '''
         else:
             pass
             #floodfill
@@ -150,15 +165,29 @@ def on_click(x, y, button, pressed):
     mouseX, mouseY = pygame.mouse.get_pos()
     start = (mouseX, mouseY)
     if pressed:
-        layer.blit(screen, (0,0))
+        if atual != 5: layer.blit(screen, (0,0))
         if mouseX > screen_size[0] >> 2 and mouseY > screen_size[1] >> 4:
             if atual == 5:
+                clicked = True
+                if curving == 0:
+                    control_points[curving] = (mouseX,mouseY)
+                    curving = curving + 1
+                elif curving == 1:
+                    control_points[curving] = (mouseX,mouseY)
+                    curving = curving + 1
+                elif curving == 2:
+                    control_points[curving] = (mouseX,mouseY)
+                    curving = curving + 1
+                    layer.blit(screen, (0,0))
+                else:
+                    clicked = False
+                '''
+                if atual == 5:
                 if curving:
                     index = 0
                     for p in control_points:
                         if abs(p[0] - start[0]) < 10 and abs(p[1] - start[1]) < 10 :
                             selected_point = index
-                            print(selected_point)
                         index = index + 1
                     clicked = True
                 else:
@@ -167,47 +196,56 @@ def on_click(x, y, button, pressed):
                         circulo(p[0], p[1], 4, (0,0,255))
 
                     # Desenha as linhas de controle
-                    #pygame.draw.lines(screen, (200,200,200), False, [(x[0], x[1]) for x in control_points])
-                    for i in range(0,len(control_points)-1):
-                        linha(control_points[i][0], control_points[i][1], control_points[i+1][0], control_points[i+1][1], (200,200,200))
+                    #for i in range(0,len(control_points)-1):
+                    linhaSegmento(control_points[0][0], control_points[0][1], control_points[1][0], control_points[1][1], (200,200,200))
+                    linhaSegmento(control_points[2][0], control_points[2][1], control_points[3][0], control_points[3][1], (200,200,200))
 
                     # Desenha a curva de bezier
-                    b_points = compute_bezier_points([(x[0], x[1]) for x in control_points])
+                    b_points = bezierCubica([(x[0], x[1]) for x in control_points])
                     for i in range(0,len(b_points)-1):
-                        linha(b_points[i][0], b_points[i][1], b_points[i+1][0], b_points[i+1][1], (255,0,0))
-
+                        linhaSegmento(b_points[i][0], b_points[i][1], b_points[i+1][0], b_points[i+1][1], (255,0,0))
                     pygame.display.flip()
-                    curving = True
+                    curving = True'''
             elif atual == 6:
-                print(atualcor)
                 colorir(mouseX,mouseY,cores[atualcor])
                 pygame.display.flip()
             else:
                 clicked = True
         elif mouseX < screen_size[0] >> 2: #Dentro do menu
             atual = mouseY // (screen_size[1] // len(primitivas))
+            if atual == 5:
+                curving = 0
+                print(curving)
         elif mouseX > (screen_size[0] >> 2) + 556 and mouseY > 5 and mouseX < (screen_size[0] >> 2) + 581 and mouseY < 30:
             atual = 6
-            print("colorir")
         else:
             c = 0
             for i in range((screen_size[0] >> 2) + 10, (screen_size[0] >> 2) + 538, 33):
                 if mouseX > i and mouseY > 3 and mouseX < i+29 and mouseY < 32:
-                    print(c)
                     atualcor = c
+                    colorir((screen_size[0] >> 2) + 563,12,cores[atualcor])
+                    
                     break
                 c = c+1
     else:
-        layer.blit(screen, (0,0))
-        if atual != 4:
+        if atual != 4 and atual != 5:
+            layer.blit(screen, (0,0))
             clicked = False
 
 
 def on_press(key):
     global clicked
+    global atual
     if key == Key.esc:
         clicked = False
         screen.blit(layer, (0,0))
+    '''if key == Key.enter:
+        if atual == 5:
+            #b_points = compute_bezier_points([(x[0], x[1]) for x in control_points])
+            for i in range(0,len(b_points)-1):
+                linhaSegmento(b_points[i][0], b_points[i][1], b_points[i+1][0], b_points[i+1][1], (255,0,0))
+            pygame.display.flip()
+            layer.blit(screen, (0,0))'''
 
 
 listener = mouse.Listener( on_move=on_move, on_click=on_click)
