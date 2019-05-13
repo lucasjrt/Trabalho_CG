@@ -1,4 +1,4 @@
-import pygame
+import pygame, numpy
 
 screen_size = (800, 600)
 
@@ -22,7 +22,7 @@ pygame.display.flip()
 
 def colorir(x, y, cor, overlay=screen):
     corRecursao(x,y,cor,overlay.get_at((x,y)))
-    #pygame.display.flip()
+    pygame.display.flip()
 
 def corRecursao(x, y, cor, corAnt, overlay=screen):
     overlay.set_at((x,y),cor)
@@ -71,7 +71,7 @@ def _linhaV(x0, y0, x1, y1, color=foreground, overlay=screen):
         D = D + 2*dx
 
 
-def _segmento(x0, y0, x1, y1, color=foreground, overlay=screen):
+def segmento(x0, y0, x1, y1, color=foreground, overlay=screen):
     if abs(y1 - y0) < abs(x1 - x0):
         if x0 > x1:
             _linhaH(x1, y1, x0, y0, color, overlay)
@@ -85,8 +85,11 @@ def _segmento(x0, y0, x1, y1, color=foreground, overlay=screen):
 
 
 def linha(x0, y0, x1, y1, color):
-    _segmento(x0, y0, x1, y1, color)
+    segmento(x0, y0, x1, y1, color)
     pygame.display.flip()
+
+def linhaSegmento(x0, y0, x1, y1, color):
+    segmento(x0, y0, x1, y1, color)
 
 
 def circulo(x0, y0, r, color=foreground, overlay=screen):
@@ -117,20 +120,20 @@ def _circulo(x, y, x0, y0, color=foreground, overlay=screen):
 
 
 def retangulo(x, y, w, h, color=foreground, overlay=screen):
-    _segmento(x, y, w, y, color, overlay)
-    _segmento(w, y, w, h, color, overlay)
-    _segmento(w, h, x, h, color, overlay)
-    _segmento(x, h, x, y, color, overlay)
+    segmento(x, y, w, y, color, overlay)
+    segmento(w, y, w, h, color, overlay)
+    segmento(w, h, x, h, color, overlay)
+    segmento(x, h, x, y, color, overlay)
     pygame.display.flip()
 
 
 def triangulo(x, y, size, color=foreground, overlay=screen):
-    _segmento(x - size, y + size, x, y - size, color, overlay)
-    _segmento(x, y - size, x + size,  y + size, color, overlay)
-    _segmento(x + size, y + size, x - size, y + size, color, overlay)
+    segmento(x - size, y + size, x, y - size, color, overlay)
+    segmento(x, y - size, x + size,  y + size, color, overlay)
+    segmento(x + size, y + size, x - size, y + size, color, overlay)
     pygame.display.flip()
 
-def compute_bezier_points(vertices, numPoints=None):
+def bezierCubica(vertices, numPoints=None):
     if numPoints is None:
         numPoints = 30
     if numPoints < 2 or len(vertices) != 4:
@@ -182,20 +185,21 @@ def compute_bezier_points(vertices, numPoints=None):
         secondFDX += thirdFDX
         secondFDY += thirdFDY
         result.append((int(pointX), int(pointY)))
-    print(result)
+
     return result
 
-'''def curva(x, y, x0, y0, color=foreground, overlay=screen):
-	for t in numpy.arange(0,1,0.01):
-    omt  = 1-t
-    omt2 = omt*omt	
-    omt3 = omt2*omt		
-    t2   = t*t
-    t3   = t2*t
-    x    = omt3 * p1[0] + ((3*omt2)*t*p1[0]) + (3*omt*t2*p3[0])+t3*p4[0]
-    y    = omt3 * p1[1] + ((3*omt2)*t*p1[1]) + (3*omt*t2*p3[1])+t3*p4[1]
-    x    = int(numpy.floor(x))
-    y    = int(numpy.floor(y))
-     
-    screen.set_at((x,y), white)
-    pygame.display.flip()'''
+def bezierQuadrado(p1,p2,p3):
+    for t in numpy.arange(0,1,0.001):
+        omt  = 1-t
+        omt2 = omt*omt
+        t2   = t*t
+        x = p1[0] * omt2 + 2 * t * omt * p3[0] + t2 * p2[0] 
+        y = p1[1] * omt2 + 2 * t * omt * p3[1] + t2 * p2[1]
+        #x    = omt3 * p1[0] + ((3*omt2)*t*p1[0]) + (3*omt*t2*p3[0])+t3*p4[0]
+        #y    = omt3 * p1[1] + ((3*omt2)*t*p1[1]) + (3*omt*t2*p3[1])+t3*p4[1]
+        x    = int(numpy.floor(x))
+        y    = int(numpy.floor(y))
+        
+        screen.set_at((x,y), black)
+    pygame.display.flip()
+
