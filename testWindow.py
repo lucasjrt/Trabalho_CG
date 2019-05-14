@@ -8,15 +8,15 @@ from threading import Thread
 #Variaveis de curva
 selected_point = None
 curving = False
-control_points = [(300,100), (300,500), (450,500), (500,150)]
-
+#control_points = [(300,100), (300,500), (450,500), (500,150)]
+control_points = [(0,0),(0,0),(0,0)]
 #Variaveis de controle
 clicked = False
 start = (0, 0)
 primitivas = {'Linha', 'Circulo', 'Retangulo', 'Quadrado', 'Polilinha', 'Curva'} #Apenas para referencia, desnecessario
-cores = [(0,0,0),(51,51,51),(255,0,0),(255,51,51),(255,255,0),(0,255,0),(0,230,255),(0,80,255),(255,0,255),(255,160,10),(255,10,160),(10,255,120),(130,130,130),(255,255,254),(0,0,255),(255,200,10)]
+cores = [(255,255,254),(51,51,51),(255,0,0),(255,51,51),(255,255,0),(0,255,0),(0,230,255),(0,80,255),(255,0,255),(255,160,10),(255,10,160),(10,255,120),(130,130,130),(0,0,0),(0,0,255),(255,200,10)]
 atual = 0 #Primitiva atual sendo desenhada
-atualcor = 0
+atualcor = 0 #Cor atual sendo usada
 c = 0
 #Implementacao da interface
 #Esqueleto
@@ -30,6 +30,8 @@ for i in range(len(primitivas)):
 	y = screen_size[1] // len(primitivas) * (i + 1)
 	linha(0, y, screen_size[0] >> 2, y, foreground)
 retangulo((screen_size[0] >> 2) + 556, 5, (screen_size[0] >> 2) + 581, 30,foreground)
+retangulo((screen_size[0] >> 2) + 561, 10, (screen_size[0] >> 2) + 576, 25,foreground)
+colorir((screen_size[0] >> 2) + 563,12,cores[atualcor])
 
 #Desenho amostral das primitivas
 #Linha
@@ -69,6 +71,13 @@ x1 = (screen_size[0] >> 2) - (screen_size[0] >> 5)
 y1 = ((screen_size[1] // 6) * 4) + screen_size[1] // 24
 linha(x0, y0, x1, y1, foreground)
 #Curva
+x0 = screen_size[0] >> 5
+y0 = ((screen_size[1] // 6) * 5) + 24
+x1 = (screen_size[0] >> 2) - 24 
+y1 = screen_size[1] - 24
+x2 = (screen_size[0] >> 2) - 24 
+y2 = ((screen_size[1] // 6) * 5) + 24
+bezierQuadrado((x0,y0),(x1,y1),(x2,y2))
 #TODO: Depois de implementada a curva, adicionar aqui
 
 layer.blit(screen, (0,0))
