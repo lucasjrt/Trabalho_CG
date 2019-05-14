@@ -3,6 +3,7 @@ from primitives import *
 from pynput.mouse import Listener
 from pynput.keyboard import Key, Listener
 from pynput import mouse
+from pynput.mouse import Button
 from threading import Thread
 
 #Variaveis de curva
@@ -14,10 +15,12 @@ control_points = [(0,0),(0,0),(0,0)]
 clicked = False
 start = (0, 0)
 primitivas = {'Linha', 'Circulo', 'Retangulo', 'Quadrado', 'Polilinha', 'Curva'} #Apenas para referencia, desnecessario
-cores = [(255,255,254),(51,51,51),(255,0,0),(255,51,51),(255,255,0),(0,255,0),(0,230,255),(0,80,255),(255,0,255),(255,160,10),(255,10,160),(10,255,120),(130,130,130),(0,0,0),(0,0,255),(255,200,10)]
+cores = [(0,0,0),(140,140,140),(255,0,0),(255,51,51),(255,255,0),(0,255,0),(0,230,255),(0,80,255),(255,0,255),(255,160,10),(255,10,160),(10,255,120),(130,130,130),(255,255,255),(0,0,255),(255,200,10)]
 atual = 0 #Primitiva atual sendo desenhada
 atualcor = 0 #Cor atual sendo usada
 c = 0
+colorindo = False
+oldAtual = 0
 #Implementacao da interface
 #Esqueleto
 linha(screen_size[0] >> 2, 0, screen_size[0] >> 2, screen_size[1], foreground)#viewport left
@@ -33,52 +36,87 @@ retangulo((screen_size[0] >> 2) + 556, 5, (screen_size[0] >> 2) + 581, 30,foregr
 retangulo((screen_size[0] >> 2) + 561, 10, (screen_size[0] >> 2) + 576, 25,foreground)
 colorir((screen_size[0] >> 2) + 563,12,cores[atualcor])
 
-#Desenho amostral das primitivas
-#Linha
-x0 = screen_size[0] >> 5
-y0 = (screen_size[1] // 6) >> 2 
-x1 = (screen_size[0] >> 2) - (screen_size[0] >> 5)
-y1 = (screen_size[1] // 6) - (screen_size[0] >> 5)
-linha(x0, y0, x1, y1, foreground)
-#Circulo
-x0 = screen_size[0] >> 3 
-y0 = (screen_size[1] // 6) + (screen_size[1] // 12)
-r = screen_size[1] // 24
-circulo(x0, y0, r, foreground)
-#Retangulo
-x0 = screen_size[0] >> 5
-y0 = ((screen_size[1] // 6) >> 2) + (screen_size[1] // 3)
-x1 = (screen_size[0] >> 2) - (screen_size[0] >> 5)
-y1 = ((screen_size[1] // 6) - (screen_size[0] >> 5)) + (screen_size[1] // 3)# - (screen_size[1] // 6 >> 2))
-retangulo(x0, y0, x1, y1, foreground)
-#Quadrado
-x0 = (screen_size[0] >> 4) + (screen_size[0] >> 5) 
-y0 = ((screen_size[1] // 6) * 3) + (screen_size[1] // 24)
-size = screen_size[1] // 12
-retangulo(x0, y0, x0 + size, y0 + size, foreground)
-#Polilinha
-x0 = (screen_size[0] >> 5)
-y0 = ((screen_size[1] // 6) * 5) - screen_size[1] // 24
-x1 = (screen_size[0] >> 5) + (screen_size[0] >> 4)
-y1 = ((screen_size[1] // 6) * 4) + screen_size[1] // 24
-linha(x0, y0, x1, y1, foreground)
-x0 = (screen_size[0] >> 3) + (screen_size[0] >> 5)
-y0 = ((screen_size[1] // 6) * 5) - screen_size[1] // 24
-linha(x1, y1, x0, y0, foreground)
-x0 -= 1
-y0 += 1
-x1 = (screen_size[0] >> 2) - (screen_size[0] >> 5)
-y1 = ((screen_size[1] // 6) * 4) + screen_size[1] // 24
-linha(x0, y0, x1, y1, foreground)
-#Curva
-x0 = screen_size[0] >> 5
-y0 = ((screen_size[1] // 6) * 5) + 24
-x1 = (screen_size[0] >> 2) - 24 
-y1 = screen_size[1] - 24
-x2 = (screen_size[0] >> 2) - 24 
-y2 = ((screen_size[1] // 6) * 5) + 24
-bezierQuadrado((x0,y0),(x1,y1),(x2,y2))
-#TODO: Depois de implementada a curva, adicionar aqui
+def desenhaBotao(indice, pressed=False):
+    if indice < 6:
+        c1 =  (250, 250, 250)#Frente botao
+        c2 = (210, 210, 210) #Fundo botao
+        button_height = 5
+        x0 = 0
+        y0 = (indice * (screen_size[1] // len(primitivas))) + 1
+        x1 = (screen_size[0] >> 2) - button_height - 1
+        y1 = ((indice + 1) * (screen_size[1] // len(primitivas))) - button_height - 1
+        if pressed:
+            x0 += button_height
+            y0 += button_height
+            x1 += button_height
+            y1 += button_height
+            c1 = (210, 210, 210)
+            c2 = (250, 250, 250)
+        colorir(x0 + 1, y0 + 1, c2)
+        retangulo(x0, y0, x1, y1, c1)
+        colorir(x0 + 1, y0 + 1, c1)
+
+    if indice == 0:
+        #Linha
+        x0 = screen_size[0] >> 5
+        y0 = (screen_size[1] // 6) >> 2 
+        x1 = (screen_size[0] >> 2) - (screen_size[0] >> 5)
+        y1 = (screen_size[1] // 6) - (screen_size[0] >> 5)
+        linha(x0, y0, x1, y1, foreground)
+    elif indice == 1:
+        #Circulo
+        x0 = screen_size[0] >> 3 
+        y0 = (screen_size[1] // 6) + (screen_size[1] // 12)
+        r = screen_size[1] // 24
+        circulo(x0, y0, r, foreground)
+    elif indice == 2:
+        #Retangulo
+        x0 = screen_size[0] >> 5
+        y0 = ((screen_size[1] // 6) >> 2) + (screen_size[1] // 3)
+        x1 = (screen_size[0] >> 2) - (screen_size[0] >> 5)
+        y1 = ((screen_size[1] // 6) - (screen_size[0] >> 5)) + (screen_size[1] // 3)# - (screen_size[1] // 6 >> 2))
+        retangulo(x0, y0, x1, y1, foreground)
+    elif indice == 3:
+        #Quadrado
+        x0 = (screen_size[0] >> 4) + (screen_size[0] >> 5) 
+        y0 = ((screen_size[1] // 6) * 3) + (screen_size[1] // 24)
+        size = screen_size[1] // 12
+        retangulo(x0, y0, x0 + size, y0 + size, foreground)
+    elif indice == 4:
+        #Polilinha
+        x0 = (screen_size[0] >> 5)
+        y0 = ((screen_size[1] // 6) * 5) - screen_size[1] // 24
+        x1 = (screen_size[0] >> 5) + (screen_size[0] >> 4)
+        y1 = ((screen_size[1] // 6) * 4) + screen_size[1] // 24
+        linha(x0, y0, x1, y1, foreground)
+        x0 = (screen_size[0] >> 3) + (screen_size[0] >> 5)
+        y0 = ((screen_size[1] // 6) * 5) - screen_size[1] // 24
+        linha(x1, y1, x0, y0, foreground)
+        x0 -= 1
+        y0 += 1
+        x1 = (screen_size[0] >> 2) - (screen_size[0] >> 5)
+        y1 = ((screen_size[1] // 6) * 4) + screen_size[1] // 24
+        linha(x0, y0, x1, y1, foreground)
+    elif indice == 5:
+        #Curva
+        x0 = screen_size[0] >> 5
+        y0 = ((screen_size[1] // 6) * 5) + 24
+        x1 = (screen_size[0] >> 2) - 24 
+        y1 = screen_size[1] - 24
+        x2 = (screen_size[0] >> 2) - 24 
+        y2 = ((screen_size[1] // 6) * 5) + 24
+        bezierQuadrado((x0,y0),(x1,y1),(x2,y2), foreground)
+    elif indice == 6:
+        c = white if not pressed else (210, 210, 210)
+        colorir((screen_size[0] >> 2) + 557,12, c) #Fundo botao
+        colorir((screen_size[0] >> 2) + 562, 11, cores[atualcor]) #Frente botao
+
+
+for i in range(len(primitivas)):
+    if i == 0:
+        desenhaBotao(i, True)
+    else:
+        desenhaBotao(i)
 
 layer.blit(screen, (0,0))
 
@@ -91,24 +129,27 @@ def on_move(x, y):
     global curving
     mouseX, mouseY = pygame.mouse.get_pos()
     if clicked:
+        #Mantem os desenhos dentro da area desenhavel
         if mouseX < screen_size[0] >> 2:
             mouseX = screen_size[0] >> 2
         if mouseY < screen_size[1] >> 4:
             mouseY = screen_size[1] >> 4
         screen.blit(layer, (0,0))
+
+        #Verifica qual operacao fazer quando arrastar o mouse
         if atual == 0: 
-            linha(start[0], start[1], mouseX, mouseY, foreground)
+            linha(start[0], start[1], mouseX, mouseY, cores[atualcor])
         elif atual == 1:
             r = int(math.sqrt(((mouseX - start[0]) ** 2) + ((mouseY - start[1]) ** 2)))
+            #Verifica se o circulo esta dentro da area de desenho
             if r > start[0] - (screen_size[0] >> 2):
                 r = start[0] - (screen_size[0] >> 2)
             if r > start[1] - (screen_size[1] >> 4):
                 r = start[1] - (screen_size[1] >> 4)
-            circulo(start[0], start[1], r, foreground)
+            circulo(start[0], start[1], r, cores[atualcor])
         elif atual == 2:
-            retangulo(start[0], start[1], mouseX, mouseY, foreground)
-        elif atual == 3:
-                
+            retangulo(start[0], start[1], mouseX, mouseY, cores[atualcor])
+        elif atual == 3: 
             signal = abs(mouseY - start[1]) // (mouseY - start[1]) if mouseY != start[1] else 1
             if mouseX < start[0]:
                 signal = -signal
@@ -118,43 +159,20 @@ def on_move(x, y):
                      mouseX = start[0] + abs((screen_size[1] >> 4) - start[1])
                 else:
                      mouseX = start[0] - abs((screen_size[1] >> 4) - start[1])    
-            retangulo(start[0], start[1], mouseX, start[1] + ((mouseX - start[0]) * signal), foreground)
+            retangulo(start[0], start[1], mouseX, start[1] + ((mouseX - start[0]) * signal), cores[atualcor])
         elif atual == 4:
-          	linha(start[0], start[1], mouseX, mouseY, foreground)
+            linha(start[0], start[1], mouseX, mouseY, cores[atualcor])
         elif atual == 5:
             if curving == 1:
-                linha(start[0], start[1], mouseX, mouseY, foreground)
+                linha(start[0], start[1], mouseX, mouseY, cores[atualcor])
             elif curving == 2:
-                bezierQuadrado(control_points[0], control_points[1], (mouseX,mouseY))
+                bezierQuadrado(control_points[0], control_points[1], (mouseX,mouseY), cores[atualcor])
             else:
                 curving = 0
-            '''
-            for p in control_points:
-                if selected_point is not None:
-                    if selected_point is not None:
-                        control_points[selected_point] = (mouseX, mouseY)
-                        circulo(control_points[selected_point][0], control_points[selected_point][1], 10, (0,255,0))
-                    # Desenha os pontos de controle
-                    for p in control_points:
-                        circulo(p[0], p[1], 4, (0,0,255))
-
-                    # Desenha as linhas de controle
-                    #for i in range(0,len(control_points)-1):
-                    linhaSegmento(control_points[0][0], control_points[0][1], control_points[1][0], control_points[1][1], (200,200,200))
-                    linhaSegmento(control_points[2][0], control_points[2][1], control_points[3][0], control_points[3][1], (200,200,200))
-
-                    # Desenha a curva de bezier
-                    b_points = bezierCubica([(x[0], x[1]) for x in control_points])
-                    for i in range(0,len(b_points)-1):
-                        linhaSegmento(b_points[i][0], b_points[i][1], b_points[i+1][0], b_points[i+1][1], (255,0,0))
-                    pygame.display.flip()
-            '''
-        else:
-            pass
-            #floodfill
 
 
 def on_click(x, y, button, pressed):
+    mouseX, mouseY = pygame.mouse.get_pos()
     global selected_point
     global control_points
     global clicked
@@ -162,12 +180,19 @@ def on_click(x, y, button, pressed):
     global atual
     global atualcor
     global curving
-    mouseX, mouseY = pygame.mouse.get_pos()
-    start = (mouseX, mouseY)
+    global colorindo
+    global oldAtual
     if pressed:
-        if atual != 5: layer.blit(screen, (0,0))
-        if mouseX > screen_size[0] >> 2 and mouseY > screen_size[1] >> 4:
-            if atual == 5:
+        if mouseX > screen_size[0] >> 2 and mouseY > screen_size[1] >> 4: #Área editável
+            start = (mouseX, mouseY)
+            if atual == 4: #Desenhando polilinha
+                if button == Button.right and clicked:
+                    clicked = False
+                    screen.blit(layer, (0,0))
+                    pygame.display.flip()
+                else:
+                    layer.blit(screen, (0,0)) 
+            if atual == 5: #Desenhando curva
                 clicked = True
                 if curving == 0:
                     control_points[curving] = (mouseX,mouseY)
@@ -181,56 +206,58 @@ def on_click(x, y, button, pressed):
                     layer.blit(screen, (0,0))
                 else:
                     clicked = False
-                '''
-                if atual == 5:
-                if curving:
-                    index = 0
-                    for p in control_points:
-                        if abs(p[0] - start[0]) < 10 and abs(p[1] - start[1]) < 10 :
-                            selected_point = index
-                        index = index + 1
-                    clicked = True
-                else:
-                    # Desenha os pontos de controle
-                    for p in control_points:
-                        circulo(p[0], p[1], 4, (0,0,255))
 
-                    # Desenha as linhas de controle
-                    #for i in range(0,len(control_points)-1):
-                    linhaSegmento(control_points[0][0], control_points[0][1], control_points[1][0], control_points[1][1], (200,200,200))
-                    linhaSegmento(control_points[2][0], control_points[2][1], control_points[3][0], control_points[3][1], (200,200,200))
-
-                    # Desenha a curva de bezier
-                    b_points = bezierCubica([(x[0], x[1]) for x in control_points])
-                    for i in range(0,len(b_points)-1):
-                        linhaSegmento(b_points[i][0], b_points[i][1], b_points[i+1][0], b_points[i+1][1], (255,0,0))
-                    pygame.display.flip()
-                    curving = True'''
-            elif atual == 6:
+            elif atual == 6: #Preencher forma
                 colorir(mouseX,mouseY,cores[atualcor])
                 pygame.display.flip()
-            else:
-                clicked = True
-        elif mouseX < screen_size[0] >> 2: #Dentro do menu
+            else: #Outras formas
+                if button != Button.right:
+                    clicked = True
+
+        elif not clicked and mouseX < screen_size[0] >> 2: #Dentro do menu de formas
+            if colorindo:
+                colorindo = False
+            oldAtual = atual
             atual = mouseY // (screen_size[1] // len(primitivas))
-            if atual == 5:
-                curving = 0
-                print(curving)
-        elif mouseX > (screen_size[0] >> 2) + 556 and mouseY > 5 and mouseX < (screen_size[0] >> 2) + 581 and mouseY < 30:
-            atual = 6
-        else:
+            if oldAtual != atual: 
+                desenhaBotao(atual, True)
+                desenhaBotao(oldAtual)
+                layer.blit(screen, (0,0))
+                if atual == 5:
+                    curving = 0
+            pygame.display.flip()
+        elif mouseX > (screen_size[0] >> 2) + 556 and mouseY > 5 and mouseX < (screen_size[0] >> 2) + 581 and mouseY < 30: #Botao preencher
+            if not colorindo:
+                colorindo = True
+                oldAtual = atual
+                atual = 6
+            else:
+                colorindo = False
+                atual = oldAtual
+                oldAtual = 6
+            desenhaBotao(atual, True)
+            desenhaBotao(oldAtual)
+            pygame.display.flip()
+        elif atual == 4: #Polilinha dentro de area indevida
+            clicked = False
+            screen.blit(layer, (0,0))
+            pygame.display.flip()
+            pass
+        else: #Selecionando cores
             c = 0
             for i in range((screen_size[0] >> 2) + 10, (screen_size[0] >> 2) + 538, 33):
                 if mouseX > i and mouseY > 3 and mouseX < i+29 and mouseY < 32:
                     atualcor = c
                     colorir((screen_size[0] >> 2) + 563,12,cores[atualcor])
-                    
                     break
                 c = c+1
-    else:
+            pygame.display.flip()
+
+
+    else: #Evento do botao sendo solto
         if atual != 4 and atual != 5:
-            layer.blit(screen, (0,0))
             clicked = False
+            layer.blit(screen, (0,0))
 
 
 def on_press(key):
@@ -239,13 +266,7 @@ def on_press(key):
     if key == Key.esc:
         clicked = False
         screen.blit(layer, (0,0))
-    '''if key == Key.enter:
-        if atual == 5:
-            #b_points = compute_bezier_points([(x[0], x[1]) for x in control_points])
-            for i in range(0,len(b_points)-1):
-                linhaSegmento(b_points[i][0], b_points[i][1], b_points[i+1][0], b_points[i+1][1], (255,0,0))
-            pygame.display.flip()
-            layer.blit(screen, (0,0))'''
+        pygame.display.flip()
 
 
 listener = mouse.Listener( on_move=on_move, on_click=on_click)

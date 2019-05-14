@@ -21,24 +21,29 @@ layer.fill(white)
 pygame.display.flip()
 
 def colorir(x, y, cor, overlay=screen):
-	stack = [(x,y)]
-	atual = (x,y)
-	color = overlay.get_at((x,y))
-	while stack:
-		overlay.set_at((stack[-1]), cor)
-		atual = stack[-1]
-		stack.pop()
-		if atual[0] < screen_size[0] - 1 and atual[1] < screen_size[1] - 1 and overlay.get_at((atual[0] + 1, atual[1])) == color:
-			stack.append((atual[0] + 1, atual[1]))
+	try: 
+		stack = [(x,y)]
+		atual = (x,y)
+		color = overlay.get_at((x,y))
+		if color == cor:
+			return
+		while stack:
+			overlay.set_at((stack[-1]), cor)
+			atual = stack[-1]
+			stack.pop()
+			if atual[0] + 1 < screen_size[0] and overlay.get_at((atual[0] + 1, atual[1])) == color:
+				stack.append((atual[0] + 1, atual[1]))
 
-		if atual[0] < screen_size[0] - 1 and atual[1] < screen_size[1] - 1 and overlay.get_at((atual[0] - 1, atual[1])) == color:
-			stack.append((atual[0] - 1, atual[1]))
+			if atual[0] - 1 >= 0 and overlay.get_at((atual[0] - 1, atual[1])) == color:
+				stack.append((atual[0] - 1, atual[1]))
 
-		if atual[0] < screen_size[0] - 1 and atual[1] < screen_size[1] - 1 and overlay.get_at((atual[0], atual[1] + 1)) == color:
-			stack.append((atual[0], atual[1] + 1))
+			if atual[1] + 1 < screen_size[1] and overlay.get_at((atual[0], atual[1] + 1)) == color:
+				stack.append((atual[0], atual[1] + 1))
 
-		if atual[0] < screen_size[0] - 1 and atual[1] < screen_size[1] - 1 and overlay.get_at((atual[0], atual[1] - 1)) == color:
-			stack.append((atual[0], atual[1] - 1))
+			if atual[1] - 1 >= 0 and overlay.get_at((atual[0], atual[1] - 1)) == color:
+				stack.append((atual[0], atual[1] - 1))
+	except IndexError:
+		print("Coordinate (", x, ", ", y, ") not found")
 	#corRecursao(x,y,cor,overlay.get_at((x,y)))
 	#pygame.display.flip()
 
@@ -269,7 +274,7 @@ def bezierCubica(vertices, numPoints=None):
 
 	return result
 
-def bezierQuadrado(p1,p2,p3):
+def bezierQuadrado(p1,p2,p3, cor):
 	for t in numpy.arange(0,1,0.001):
 		omt  = 1-t
 		omt2 = omt*omt
@@ -281,6 +286,6 @@ def bezierQuadrado(p1,p2,p3):
 		x    = int(numpy.floor(x))
 		y    = int(numpy.floor(y))
 
-		screen.set_at((x,y), black)
+		screen.set_at((x,y), cor)
 	pygame.display.flip()
 

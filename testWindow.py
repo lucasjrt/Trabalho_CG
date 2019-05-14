@@ -33,52 +33,70 @@ retangulo((screen_size[0] >> 2) + 556, 5, (screen_size[0] >> 2) + 581, 30,foregr
 retangulo((screen_size[0] >> 2) + 561, 10, (screen_size[0] >> 2) + 576, 25,foreground)
 colorir((screen_size[0] >> 2) + 563,12,cores[atualcor])
 
+def desenhaBotao(indice, pressed=false):
+	if indice == 0:
+		#Linha
+		x0 = screen_size[0] >> 5
+		y0 = (screen_size[1] // 6) >> 2 
+		x1 = (screen_size[0] >> 2) - (screen_size[0] >> 5)
+		y1 = (screen_size[1] // 6) - (screen_size[0] >> 5)
+		linha(x0, y0, x1, y1, foreground)
+	elif indice == 1:
+		#Circulo
+		x0 = screen_size[0] >> 3 
+		y0 = (screen_size[1] // 6) + (screen_size[1] // 12)
+		r = screen_size[1] // 24
+		circulo(x0, y0, r, foreground)
+	elif indice == 2:
+		#Retangulo
+		x0 = screen_size[0] >> 5
+		y0 = ((screen_size[1] // 6) >> 2) + (screen_size[1] // 3)
+		x1 = (screen_size[0] >> 2) - (screen_size[0] >> 5)
+		y1 = ((screen_size[1] // 6) - (screen_size[0] >> 5)) + (screen_size[1] // 3)# - (screen_size[1] // 6 >> 2))
+		retangulo(x0, y0, x1, y1, foreground)
+	elif indice == 3:
+		#Quadrado
+		x0 = (screen_size[0] >> 4) + (screen_size[0] >> 5) 
+		y0 = ((screen_size[1] // 6) * 3) + (screen_size[1] // 24)
+		size = screen_size[1] // 12
+		retangulo(x0, y0, x0 + size, y0 + size, foreground)
+	elif indice == 4:
+		#Polilinha
+		x0 = (screen_size[0] >> 5)
+		y0 = ((screen_size[1] // 6) * 5) - screen_size[1] // 24
+		x1 = (screen_size[0] >> 5) + (screen_size[0] >> 4)
+		y1 = ((screen_size[1] // 6) * 4) + screen_size[1] // 24
+		linha(x0, y0, x1, y1, foreground)
+		x0 = (screen_size[0] >> 3) + (screen_size[0] >> 5)
+		y0 = ((screen_size[1] // 6) * 5) - screen_size[1] // 24
+		linha(x1, y1, x0, y0, foreground)
+		x0 -= 1
+		y0 += 1
+		x1 = (screen_size[0] >> 2) - (screen_size[0] >> 5)
+		y1 = ((screen_size[1] // 6) * 4) + screen_size[1] // 24
+		linha(x0, y0, x1, y1, foreground)
+	elif indice == 5:
+		#Curva
+		x0 = screen_size[0] >> 5
+		y0 = ((screen_size[1] // 6) * 5) + 24
+		x1 = (screen_size[0] >> 2) - 24 
+		y1 = screen_size[1] - 24
+		x2 = (screen_size[0] >> 2) - 24 
+		y2 = ((screen_size[1] // 6) * 5) + 24
+		bezierQuadrado((x0,y0),(x1,y1),(x2,y2))
+
+	button_height = 10
+	x0 = 0
+	y0 = indice * (screen_size[1] // len(primitivas)) + 30 
+	x1 = screen_size[0] >> 3
+	y1 = (indice + 1) * (screen_size[1] // len(primitivas))
+	retangulo(x0, y0, x1, y1, foreground, layer)
+	colorir(x0 + 1, y0 + 1, (51, 51, 255))
+		
+
 #Desenho amostral das primitivas
-#Linha
-x0 = screen_size[0] >> 5
-y0 = (screen_size[1] // 6) >> 2 
-x1 = (screen_size[0] >> 2) - (screen_size[0] >> 5)
-y1 = (screen_size[1] // 6) - (screen_size[0] >> 5)
-linha(x0, y0, x1, y1, foreground)
-#Circulo
-x0 = screen_size[0] >> 3 
-y0 = (screen_size[1] // 6) + (screen_size[1] // 12)
-r = screen_size[1] // 24
-circulo(x0, y0, r, foreground)
-#Retangulo
-x0 = screen_size[0] >> 5
-y0 = ((screen_size[1] // 6) >> 2) + (screen_size[1] // 3)
-x1 = (screen_size[0] >> 2) - (screen_size[0] >> 5)
-y1 = ((screen_size[1] // 6) - (screen_size[0] >> 5)) + (screen_size[1] // 3)# - (screen_size[1] // 6 >> 2))
-retangulo(x0, y0, x1, y1, foreground)
-#Quadrado
-x0 = (screen_size[0] >> 4) + (screen_size[0] >> 5) 
-y0 = ((screen_size[1] // 6) * 3) + (screen_size[1] // 24)
-size = screen_size[1] // 12
-retangulo(x0, y0, x0 + size, y0 + size, foreground)
-#Polilinha
-x0 = (screen_size[0] >> 5)
-y0 = ((screen_size[1] // 6) * 5) - screen_size[1] // 24
-x1 = (screen_size[0] >> 5) + (screen_size[0] >> 4)
-y1 = ((screen_size[1] // 6) * 4) + screen_size[1] // 24
-linha(x0, y0, x1, y1, foreground)
-x0 = (screen_size[0] >> 3) + (screen_size[0] >> 5)
-y0 = ((screen_size[1] // 6) * 5) - screen_size[1] // 24
-linha(x1, y1, x0, y0, foreground)
-x0 -= 1
-y0 += 1
-x1 = (screen_size[0] >> 2) - (screen_size[0] >> 5)
-y1 = ((screen_size[1] // 6) * 4) + screen_size[1] // 24
-linha(x0, y0, x1, y1, foreground)
-#Curva
-x0 = screen_size[0] >> 5
-y0 = ((screen_size[1] // 6) * 5) + 24
-x1 = (screen_size[0] >> 2) - 24 
-y1 = screen_size[1] - 24
-x2 = (screen_size[0] >> 2) - 24 
-y2 = ((screen_size[1] // 6) * 5) + 24
-bezierQuadrado((x0,y0),(x1,y1),(x2,y2))
-#TODO: Depois de implementada a curva, adicionar aqui
+#for i in range(len(primitivas)):
+#	desenhaBotao(i)
 
 layer.blit(screen, (0,0))
 
